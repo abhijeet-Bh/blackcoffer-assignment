@@ -1,0 +1,41 @@
+{% extends "admin/base_site.html" %} {% block content %}
+<h1>Mongo Events (preview)</h1>
+
+<form method="get">
+  <label
+    >Country: <input name="country" value="{{ request.GET.country }}"
+  /></label>
+  <button type="submit">Filter</button>
+</form>
+
+<table style="width: 100%; border-collapse: collapse">
+  <thead>
+    <tr>
+      <th style="border: 1px solid #ddd; padding: 6px">mongo_id</th>
+      <th style="border: 1px solid #ddd; padding: 6px">published_year</th>
+      <th style="border: 1px solid #ddd; padding: 6px">country</th>
+      <th style="border: 1px solid #ddd; padding: 6px">topic</th>
+      <th style="border: 1px solid #ddd; padding: 6px">sector</th>
+      <th style="border: 1px solid #ddd; padding: 6px">intensity</th>
+      <th style="border: 1px solid #ddd; padding: 6px">insight</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for d in docs %}
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 6px">{{ d.mongo_id }}</td>
+      <td style="border: 1px solid #ddd; padding: 6px">
+        {{ d.published_year }}
+      </td>
+      <td style="border: 1px solid #ddd; padding: 6px">{{ d.country }}</td>
+      <td style="border: 1px solid #ddd; padding: 6px">{{ d.topic }}</td>
+      <td style="border: 1px solid #ddd; padding: 6px">{{ d.sector }}</td>
+      <td style="border: 1px solid #ddd; padding: 6px">{{ d.intensity }}</td>
+      <td style="border: 1px solid #ddd; padding: 6px">
+        {{ d.insight_short }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
