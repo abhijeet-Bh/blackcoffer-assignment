@@ -46,31 +46,36 @@ export default function Login() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 bg-white p-6 rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Sign in (Demo)</h2>
-      {err && <div className="text-red-600 mb-2">{err}</div>}
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="w-full border p-2 rounded"
-        />
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          placeholder="Password"
-          className="w-full border p-2 rounded"
-        />
-        <button className="w-full bg-blue-600 text-white py-2 rounded">
-          Login
-        </button>
-      </form>
+    <div className="w-screen h-screen flex justify-center items-center">
+      <div className="max-w-md h-1/2 flex flex-col items-center justify-center mx-auto bg-linear-to-br from-primary/20 to-light/40 p-10 rounded shadow-md">
+        <h2 className="text-2xl text-text font-bold">Welcome back!</h2>
+        <p className="text-md font-semibold text-primary mb-8">
+          Login to to continue to dashboard
+        </p>
+        {err && <div className="text-red-600 mb-2">{err}</div>}
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="w-full border p-2 rounded-lg border-text text-accent font-semibold"
+          />
+          <input
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            placeholder="Password"
+            className="w-full border p-2 rounded-lg border-text text-accent font-semibold"
+          />
+          <button className="w-full cursor-pointer bg-text text-white py-2 rounded-lg">
+            Login
+          </button>
+        </form>
 
-      <div className="mt-4 text-sm text-gray-600">
-        Demo credentials: <strong>admin@demo.com</strong> /{" "}
-        <strong>admin123</strong>
+        <div className="mt-4 text-sm text-gray-600">
+          Demo credentials: <strong>admin@demo.com</strong> /{" "}
+          <strong>admin123</strong>
+        </div>
       </div>
     </div>
   );

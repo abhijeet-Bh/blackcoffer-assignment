@@ -10,7 +10,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg">
       <Navbar />
-      <main className="p-4 max-w-7xl mx-auto">
+      <main>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<Login />} />

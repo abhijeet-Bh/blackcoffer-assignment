@@ -60,3 +60,22 @@ export const getAvgIntensityByYear = (qs = "") =>
 export const getCountByCountry = (qs = "") =>
   apiFetch(`/agg/count-by-country/${qs ? "?" + qs : ""}`);
 export const getEvents = (qs = "") => apiFetch(`/events/${qs ? "?" + qs : ""}`);
+
+export const getRadarBySector = (qs = "") =>
+  apiFetch(`/agg/radar-by-sector/${qs}`);
+export const getScatterIntensityLikelihood = (qs = "") =>
+  apiFetch(`/agg/scatter-intensity-likelihood/${qs}`);
+export const getTopicsSunburst = (qs = "") =>
+  apiFetch(`/agg/topics-sunburst/${qs}`);
+export const getTopTopics = (limit = 5, qs = "") =>
+  apiFetch(`/agg/top-topics/?limit=${limit}${qs ? "&" + qs : ""}`);
+
+export default {
+  apiFetch,
+  getMetaFilters,
+  getRadarBySector,
+  getAvgIntensityByYear,
+  getScatterIntensityLikelihood,
+  getTopicsSunburst,
+  getTopTopics,
+};

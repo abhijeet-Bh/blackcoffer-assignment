@@ -80,9 +80,9 @@ export default function BeautifulLineChart({
       .attr("y1", "0%")
       .attr("x2", "100%")
       .attr("y2", "0%");
-    grad.append("stop").attr("offset", "0%").attr("stop-color", "#4f1787");
-    grad.append("stop").attr("offset", "50%").attr("stop-color", "#4f1787");
-    grad.append("stop").attr("offset", "100%").attr("stop-color", "#4f1787");
+    grad.append("stop").attr("offset", "0%").attr("stop-color", "#E36063");
+    grad.append("stop").attr("offset", "50%").attr("stop-color", "#E36063");
+    grad.append("stop").attr("offset", "100%").attr("stop-color", "#E36063");
 
     // area gradient (vertical fade)
     const areaGrad = defs
@@ -95,17 +95,17 @@ export default function BeautifulLineChart({
     areaGrad
       .append("stop")
       .attr("offset", "0%")
-      .attr("stop-color", "#4f1787")
+      .attr("stop-color", "#E36063")
       .attr("stop-opacity", 0.18);
     areaGrad
       .append("stop")
       .attr("offset", "60%")
-      .attr("stop-color", "#4f1787")
+      .attr("stop-color", "#E36063")
       .attr("stop-opacity", 0.05);
     areaGrad
       .append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#4f1787")
+      .attr("stop-color", "#E36063")
       .attr("stop-opacity", 0);
 
     const g = svg

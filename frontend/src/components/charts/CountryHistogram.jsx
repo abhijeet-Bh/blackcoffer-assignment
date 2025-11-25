@@ -56,7 +56,7 @@ export default function CountryHistogram({ limit = 10, height = 320 }) {
       .scaleBand()
       .domain(
         data.map((d) =>
-          d.country.length > 15 ? `${d.country.slice(0, 12)}...` : d.country
+          d.country.length > 13 ? `${d.country.slice(0, 11)}...` : d.country
         )
       )
       .range([0, h])
@@ -67,7 +67,7 @@ export default function CountryHistogram({ limit = 10, height = 320 }) {
     const color = d3
       .scaleLinear()
       .domain([0, maxCount * 0.6, maxCount])
-      .range(["#B13BFF", "#3b82f6", "#7c3aed"]);
+      .range(["#E36063", "#f875aa", "#FF8F8F"]);
 
     const g = svg
       .append("g")

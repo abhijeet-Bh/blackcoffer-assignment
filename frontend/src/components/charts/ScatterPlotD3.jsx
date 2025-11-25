@@ -64,7 +64,7 @@ export default function ScatterPlotD3({
       .attr("cx", (d) => x(d.intensity || 0))
       .attr("cy", (d) => y(d.likelihood || 0))
       .attr("r", (d) => r(d.relevance || 1))
-      .attr("fill", "rgba(29,78,216,0.7)")
+      .attr("fill", "#f875aa")
       .attr("stroke", "white")
       .on("mouseover", function (e, d) {
         const html = `${d.title || ""} <br/> ${d.country || ""} (${
