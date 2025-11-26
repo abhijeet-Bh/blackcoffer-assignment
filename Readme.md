@@ -32,7 +32,7 @@ This Assignment was created to Visualize Data give in file `jsondata.json`. The 
 ### C. Cloning this repository.
 
 ```shell
-git clone
+git clone https://github.com/abhijeet-Bh/blackcoffer-assignment.git
 cd blackcoffer-assignment
 ```
 
