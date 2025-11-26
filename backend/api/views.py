@@ -2,15 +2,13 @@
 import os
 import json
 from dateutil import parser
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework import status
 from pymongo import ASCENDING, DESCENDING
 from .db import get_collection
-from django.http import HttpResponse
 import csv
 from bson import ObjectId
-from pymongo import DESCENDING
 
 def _transform_item(i):
     # basic transforms: parse published into ISO + year
@@ -32,7 +30,7 @@ def _transform_item(i):
 def import_data(request):
     """
     POST /api/import/
-    Reads backend/data.json (must be present) and inserts into Mongo.
+    Reads backend/jsondata.json (must be present) and inserts into Mongo.
     For production use a safer import flow.
     """
     col = get_collection()
@@ -128,19 +126,22 @@ def agg_avg_intensity_by_year(request):
             q[f] = {"$in": [v.strip() for v in val.split(",")]}
 
     pipeline = [
-        {"$match": q},
+        {"$match": {**q, "published_year": {"$ne": None}}},
         {"$group": {
             "_id": "$published_year",
-            "avgIntensity": {"$avg": {"$cond": [{ "$isNumber": "$intensity" }, "$intensity", None]}},
+            "avgIntensity": {"$avg": {"$cond": [{ "$isNumber": "$intensity" }, "$intensity", 0]}},
             "count": {"$sum": 1}
         }},
-        {"$sort": {"_id": 1}}
+        {"$project": {
+            "_id": 0,
+            "year": "$_id",
+            "avgIntensity": {"$round": ["$avgIntensity", 3]},
+            "count": 1
+        }},
+        {"$sort": {"year": 1}}
     ]
     res = list(col.aggregate(pipeline))
-    out = []
-    for r in res:
-        out.append({"year": r["_id"], "avgIntensity": r.get("avgIntensity"), "count": r.get("count")})
-    return JsonResponse(out, safe=False)
+    return JsonResponse(res, safe=False)
 
 @api_view(["GET"])
 def meta_filters(request):
@@ -163,7 +164,6 @@ def meta_filters(request):
             vals = sorted([v for v in vals if v not in (None, "", " ")])
         out[f] = vals
     return JsonResponse(out, safe=False)
-
 
 
 # -----------------------
@@ -355,3 +355,107 @@ def export_csv(request):
         row = [doc.get(f, "") for f in fields]
         writer.writerow(row)
     return response
+
+# -----------------------
+# NEW: Radar by sector
+# GET /api/agg/radar-by-sector/?limit=10
+# -----------------------
+@api_view(["GET"])
+def agg_radar_by_sector(request):
+    """
+    Returns average intensity, likelihood, relevance and count grouped by sector.
+    Accepts same filters as other endpoints.
+    Example: /api/agg/radar-by-sector/?region=Asia&published_year=2016
+    """
+    col = get_collection()
+    q = _build_filters_from_request(request)
+    # ensure sector exists
+    q = {**q, "sector": {"$ne": None}}
+
+    pipeline = [
+        {"$match": q},
+        {"$group": {
+            "_id": "$sector",
+            "avgIntensity": {"$avg": {"$cond": [{ "$isNumber": "$intensity" }, "$intensity", 0]}},
+            "avgLikelihood": {"$avg": {"$cond": [{ "$isNumber": "$likelihood" }, "$likelihood", 0]}},
+            "avgRelevance": {"$avg": {"$cond": [{ "$isNumber": "$relevance" }, "$relevance", 0]}},
+            "count": {"$sum": 1}
+        }},
+        {"$project": {
+            "_id": 0,
+            "sector": "$_id",
+            "intensity": {"$round": ["$avgIntensity", 3]},
+            "likelihood": {"$round": ["$avgLikelihood", 3]},
+            "relevance": {"$round": ["$avgRelevance", 3]},
+            "count": 1
+        }},
+        {"$sort": {"count": -1}}
+    ]
+    res = list(col.aggregate(pipeline))
+    # optional limit
+    try:
+        limit = int(request.GET.get("limit", 0))
+        if limit > 0:
+            res = res[:limit]
+    except:
+        pass
+    return JsonResponse(res, safe=False)
+
+# -----------------------
+# NEW: Topics Sunburst (sector -> topic -> country)
+# GET /api/agg/topics-sunburst/
+# -----------------------
+@api_view(["GET"])
+def agg_topics_sunburst(request):
+    """
+    Returns hierarchical JSON suitable for a zoomable sunburst:
+    root -> sector -> topic -> country (value = count)
+    Accepts same filters as other endpoints.
+    """
+    col = get_collection()
+    q = _build_filters_from_request(request)
+    # require sector & topic for meaningful hierarchy
+    q = {**q, "sector": {"$ne": None}, "topic": {"$ne": None}}
+
+    pipeline = [
+        {"$match": q},
+        {"$group": {
+            "_id": {"sector": "$sector", "topic": "$topic", "country": "$country"},
+            "count": {"$sum": 1}
+        }},
+        {"$project": {
+            "_id": 0,
+            "sector": "$_id.sector",
+            "topic": "$_id.topic",
+            "country": {"$ifNull": ["$_id.country", "Unknown"]},
+            "count": 1
+        }},
+        {"$sort": {"count": -1}}
+    ]
+    rows = list(col.aggregate(pipeline))
+
+    # build nested dict
+    root = {"name": "root", "children": []}
+    sector_map = {}
+    for r in rows:
+        sec = r.get("sector") or "Unknown"
+        top = r.get("topic") or "Unknown"
+        country = r.get("country") or "Unknown"
+        cnt = int(r.get("count", 0))
+        sector_map.setdefault(sec, {})
+        sector_map[sec].setdefault(top, {})
+        sector_map[sec][top][country] = sector_map[sec][top].get(country, 0) + cnt
+
+    for sec, topics in sector_map.items():
+        sec_node = {"name": sec, "children": []}
+        for top, countries in topics.items():
+            top_node = {"name": top, "children": []}
+            for c_name, c_val in countries.items():
+                top_node["children"].append({"name": c_name, "value": c_val})
+            top_node["children"].sort(key=lambda x: -x.get("value", 0))
+            sec_node["children"].append(top_node)
+        sec_node["children"].sort(key=lambda t: -sum(ch.get("value",0) for ch in t.get("children",[])))
+        root["children"].append(sec_node)
+    root["children"].sort(key=lambda s: -sum(sum(ch.get("value",0) for ch in t.get("children",[])) for t in s.get("children",[])))
+
+    return JsonResponse(root, safe=False)

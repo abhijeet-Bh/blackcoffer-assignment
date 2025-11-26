@@ -15,4 +15,6 @@ urlpatterns = [
     path("agg/scatter-intensity-likelihood/", views.agg_scatter_intensity_likelihood, name="agg_scatter_intensity_likelihood"),
     path("agg/count-by-year/", views.agg_count_by_year, name="agg_count_by_year"),
     path("export/csv/", views.export_csv, name="export_csv"),
+    path("agg/radar-by-sector/", views.agg_radar_by_sector),
+    path("agg/topics-sunburst/", views.agg_topics_sunburst),
 ]
